@@ -96,11 +96,11 @@ function getRequiredEnv(name) {
 }
 
 async function sendEmailRequest() {
-  const serviceId = getRequiredEnv("EMAILJS_SERVICE_ID");
-  const templateId = getRequiredEnv("EMAILJS_TEMPLATE_ID");
-  const publicKey = getRequiredEnv("EMAILJS_PUBLIC_KEY");
-  const privateKey = getRequiredEnv("EMAILJS_PRIVATE_KEY");
-  const toEmail = getRequiredEnv("REQUEST_RECIPIENT_EMAIL");
+  const serviceId = getRequiredEnv("service_l0abpsm");
+  const templateId = getRequiredEnv("template_d1e4ttq");
+  const publicKey = getRequiredEnv("2u6gtfbEMxYB1d33q");
+  const privateKey = getRequiredEnv("JY2RrAq1iQbJcInZly5sQ");
+  const toEmail = getRequiredEnv("honestkaifan@gmail.com");
 
   const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
     method: "POST",
