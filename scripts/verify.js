@@ -14,6 +14,14 @@ const requiredFiles = [
   "README.md",
   "icons/icon.svg",
   "icons/maskable-icon.svg",
+  "public/index.html",
+  "public/styles.css",
+  "public/script.js",
+  "public/manifest.json",
+  "public/service-worker.js",
+  "public/icons/icon.svg",
+  "public/icons/maskable-icon.svg",
+  "scripts/build-public.js",
   "scripts/prepare-capacitor.js"
 ];
 

@@ -1,7 +1,7 @@
 {
   "version": 2,
   "cleanUrls": true,
-  "outputDirectory": ".",
+  "outputDirectory": "public",
   "functions": {
     "api/request.js": {
       "runtime": "nodejs20.x"
