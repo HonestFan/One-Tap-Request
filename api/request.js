@@ -25,6 +25,14 @@ class EmailDeliveryError extends Error {
   }
 }
 
+class RequestPayloadError extends Error {
+  constructor(message, details = {}) {
+    super(message);
+    this.name = "RequestPayloadError";
+    this.details = details;
+  }
+}
+
 function sendJson(response, statusCode, payload) {
   response.statusCode = statusCode;
   response.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -72,16 +80,32 @@ function readBody(request) {
 }
 
 async function readJsonPayload(request) {
-  if (request.body && typeof request.body === "object") {
+  if (request.body && typeof request.body === "object" && !Buffer.isBuffer(request.body) && !(request.body instanceof Uint8Array)) {
     return request.body;
   }
 
+  let rawBody;
+
   if (typeof request.body === "string") {
-    return JSON.parse(request.body);
+    rawBody = request.body;
+  } else if (Buffer.isBuffer(request.body) || request.body instanceof Uint8Array) {
+    rawBody = Buffer.from(request.body).toString("utf8");
+  } else {
+    rawBody = await readBody(request);
   }
 
-  const rawBody = await readBody(request);
-  return JSON.parse(rawBody);
+  if (!rawBody || !rawBody.trim()) {
+    throw new RequestPayloadError("Request body is empty.");
+  }
+
+  try {
+    return JSON.parse(rawBody);
+  } catch (error) {
+    throw new RequestPayloadError("Request body is not valid JSON.", {
+      parserMessage: error?.message || "Invalid JSON",
+      bodyLength: rawBody.length
+    });
+  }
 }
 
 function validatePayload(payload) {
@@ -255,6 +279,16 @@ export default async function handler(request, response) {
         code: "EMAIL_DELIVERY_FAILED",
         message: "Email delivery failed.",
         diagnostic: error.details?.response || error.details?.cause || "Unknown EmailJS delivery error."
+      });
+      return;
+    }
+
+    if (error instanceof RequestPayloadError) {
+      logRequestError(error, { phase: "payload" });
+      sendJson(response, 400, {
+        ok: false,
+        code: "INVALID_JSON",
+        message: "Invalid request body."
       });
       return;
     }
