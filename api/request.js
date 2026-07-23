@@ -174,6 +174,22 @@ function logRequestError(error, context = {}) {
   }));
 }
 
+function classifyEmailJsFailure(body) {
+  if (/non-browser environments/i.test(body)) {
+    return {
+      code: "EMAILJS_NON_BROWSER_API_DISABLED",
+      message: "EmailJS server-side API access is disabled.",
+      diagnostic: "Enable API requests from non-browser applications in EmailJS Account > Security."
+    };
+  }
+
+  return {
+    code: "EMAIL_DELIVERY_FAILED",
+    message: "Email delivery failed.",
+    diagnostic: body || "Unknown EmailJS delivery error."
+  };
+}
+
 async function sendEmailRequest() {
   validateEmailConfig();
 
@@ -216,7 +232,11 @@ async function sendEmailRequest() {
   const body = await emailResponse.text();
 
   if (!emailResponse.ok) {
+    const classification = classifyEmailJsFailure(body);
     throw new EmailDeliveryError("EmailJS rejected the request.", {
+      code: classification.code,
+      message: classification.message,
+      diagnostic: classification.diagnostic,
       status: emailResponse.status,
       response: body.slice(0, 500)
     });
@@ -277,9 +297,9 @@ export default async function handler(request, response) {
       logRequestError(error, { phase: "emailjs" });
       sendJson(response, 502, {
         ok: false,
-        code: "EMAIL_DELIVERY_FAILED",
-        message: "Email delivery failed.",
-        diagnostic: error.details?.response || error.details?.cause || "Unknown EmailJS delivery error."
+        code: error.details?.code || "EMAIL_DELIVERY_FAILED",
+        message: error.details?.message || "Email delivery failed.",
+        diagnostic: error.details?.diagnostic || error.details?.cause || "Unknown EmailJS delivery error."
       });
       return;
     }
