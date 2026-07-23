@@ -1,0 +1,26 @@
+{
+  "name": "One Tap Request",
+  "short_name": "One Tap",
+  "description": "One beautiful button that sends a request.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fffbf7",
+  "theme_color": "#fff7f2",
+  "categories": ["lifestyle", "utilities"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
