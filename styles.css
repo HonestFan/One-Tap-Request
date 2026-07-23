@@ -21,55 +21,29 @@
 
 html,
 body {
-  min-height: 100%;
+  height: 100%;
   margin: 0;
-  background: #e9e4e0;
+  font-family: var(--font-body);
+  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
 }
 
 body {
   min-height: 100svh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-body);
   color: var(--ink);
   overflow: hidden;
-}
-
-.device {
-  width: min(390px, 100vw);
-  height: min(844px, 100svh);
-  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
-  border-radius: clamp(0px, 8vw, 52px);
-  box-shadow:
-    0 40px 80px -20px rgba(58, 46, 44, 0.35),
-    0 0 0 10px #1c1a19,
-    0 0 0 12px #302c2a;
-  position: relative;
-  overflow: hidden;
-}
-
-.notch {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 120px;
-  height: 30px;
-  background: #1c1a19;
-  border-radius: 0 0 18px 18px;
-  z-index: 20;
 }
 
 .screen {
   position: relative;
   width: 100%;
   height: 100%;
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: max(88px, calc(env(safe-area-inset-top) + 80px)) 32px max(48px, calc(env(safe-area-inset-bottom) + 44px));
+  padding: max(14vh, calc(env(safe-area-inset-top) + 56px)) 32px max(48px, calc(env(safe-area-inset-bottom) + 48px));
+  overflow: hidden;
 }
 
 .bloom {
@@ -124,7 +98,8 @@ body {
 
 .ring {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
   width: 260px;
   height: 260px;
   transform: rotate(-90deg);
@@ -163,7 +138,7 @@ body {
   width: 196px;
   height: 196px;
   border-radius: 50%;
-  border: 0;
+  border: none;
   background: radial-gradient(circle at 32% 28%, #ffb199 0%, var(--coral-2) 46%, var(--coral-3) 100%);
   box-shadow:
     0 22px 44px -12px rgba(232, 93, 122, 0.55),
@@ -357,31 +332,32 @@ body {
   }
 }
 
-@media (display-mode: standalone), (max-width: 430px) {
-  body {
-    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
-  }
-
-  .device {
-    width: 100vw;
-    height: 100svh;
-    border-radius: 0;
-    box-shadow: none;
-  }
-
-  .notch {
-    display: none;
+@media (min-width: 900px) {
+  .screen {
+    padding-top: max(12vh, 92px);
+    padding-bottom: 72px;
   }
 }
 
 @media (max-height: 650px) {
   .screen {
-    padding-top: 54px;
-    padding-bottom: 30px;
+    padding-top: max(40px, env(safe-area-inset-top));
+    padding-bottom: max(28px, env(safe-area-inset-bottom));
   }
 
   .button-stage {
     transform: scale(0.86);
+  }
+}
+
+@media (max-width: 340px) {
+  .screen {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .button-stage {
+    transform: scale(0.88);
   }
 }
 
