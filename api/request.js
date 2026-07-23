@@ -260,6 +260,11 @@ export default async function handler(request, response) {
     }
 
     logRequestError(error, { phase: "unexpected" });
-    sendJson(response, 500, { ok: false, code: "REQUEST_FAILED", message: "Request could not be sent." });
+    sendJson(response, 500, {
+      ok: false,
+      code: "REQUEST_FAILED",
+      message: "Request could not be sent.",
+      diagnostic: error?.message || "Unknown unexpected request error."
+    });
   }
 }
