@@ -1,10 +1,9 @@
-const CACHE_NAME = "one-tap-request-v1";
+const CACHE_NAME = "one-tap-request-v2";
 const STATIC_ASSETS = [
   "/",
   "/index.html",
   "/styles.css",
   "/script.js",
-  "/manifest.json",
   "/icons/icon.svg",
   "/icons/maskable-icon.svg"
 ];
