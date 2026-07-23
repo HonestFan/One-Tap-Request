@@ -175,8 +175,11 @@ export default async function handler(request, response) {
 
     await sendEmailRequest();
     sendJson(response, 200, { ok: true });
-  } catch (error) {
-    console.error(error);
-    sendJson(response, 500, { ok: false, message: "Request could not be sent." });
-  }
+  }catch (error) {
+  console.error(error);
+
+  sendJson(response, 500, {
+    ok: false,
+    error: error.message
+  });
 }
