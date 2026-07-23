@@ -250,7 +250,12 @@ export default async function handler(request, response) {
 
     if (error instanceof EmailDeliveryError) {
       logRequestError(error, { phase: "emailjs" });
-      sendJson(response, 502, { ok: false, code: "EMAIL_DELIVERY_FAILED", message: "Email delivery failed." });
+      sendJson(response, 502, {
+        ok: false,
+        code: "EMAIL_DELIVERY_FAILED",
+        message: "Email delivery failed.",
+        diagnostic: error.details?.response || error.details?.cause || "Unknown EmailJS delivery error."
+      });
       return;
     }
 
