@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#fff7f2">
+  <meta name="description" content="One beautiful button that sends a request.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="One Tap Request">
+  <title>One Tap Request</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icons/icon.svg">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="device" aria-label="One Tap Request">
+    <div class="notch" aria-hidden="true"></div>
+    <section class="screen">
+      <div class="bloom" aria-hidden="true"></div>
+
+      <header class="heading-wrap">
+        <p class="eyebrow">Always within reach</p>
+        <h1 class="heading">I'm here <span class="heart">❤</span></h1>
+      </header>
+
+      <div class="button-stage" id="stage">
+        <svg class="ring" viewBox="0 0 260 260" aria-hidden="true">
+          <defs>
+            <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ff9a8b"></stop>
+              <stop offset="100%" stop-color="#e85d7a"></stop>
+            </linearGradient>
+            <linearGradient id="successRingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#7fdda8"></stop>
+              <stop offset="100%" stop-color="#3aa873"></stop>
+            </linearGradient>
+          </defs>
+          <circle class="ring-track" cx="130" cy="130" r="115"></circle>
+          <circle class="ring-progress" id="ringProgress" cx="130" cy="130" r="115"></circle>
+        </svg>
+
+        <button class="btn" id="requestButton" type="button" aria-label="Hold to send request" aria-describedby="statusIdle">
+          <span class="btn-icon">
+            <svg class="heart-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 21s-7.5-4.65-10.2-9.03C.2 9.36 1.1 5.9 4.2 4.7c2.1-.82 4.2 0 5.8 2 .5.6 1.5.6 2 0 1.6-2 3.7-2.82 5.8-2 3.1 1.2 4 4.66 2.4 7.27C19.5 16.35 12 21 12 21z"></path>
+            </svg>
+            <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="4 12 10 18 20 6"></polyline>
+            </svg>
+          </span>
+          <span class="btn-label">Request</span>
+        </button>
+      </div>
+
+      <div class="status-wrap" aria-live="polite">
+        <p class="status idle" id="statusIdle">Hold the button to send a request.</p>
+        <p class="status confirm" id="statusConfirm">Request Sent ❤</p>
+        <p class="status error" id="statusError">Try again in a moment.</p>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/script.js"></script>
+</body>
+</html>

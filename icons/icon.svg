@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="One Tap Request">
+  <defs>
+    <linearGradient id="background" x1="128" y1="40" x2="416" y2="472" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fffbf7"/>
+      <stop offset="1" stop-color="#fdf3ee"/>
+    </linearGradient>
+    <radialGradient id="button" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(198 180) rotate(55) scale(240)">
+      <stop offset="0" stop-color="#ffb199"/>
+      <stop offset="0.48" stop-color="#ff6f91"/>
+      <stop offset="1" stop-color="#e85d7a"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#background)"/>
+  <circle cx="256" cy="256" r="154" fill="none" stroke="#f1b2be" stroke-width="12"/>
+  <circle cx="256" cy="256" r="120" fill="url(#button)"/>
+  <path fill="#fff" d="M256 337s-84-52-114-101c-18-29-8-68 27-82 24-9 47 0 65 23 6 7 17 7 22 0 18-23 42-32 66-23 35 14 45 53 27 82-30 49-114 101-114 101Z"/>
+</svg>

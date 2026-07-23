@@ -1,0 +1,26 @@
+{
+  "name": "one-tap-request",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A personal one-button PWA and Capacitor app that sends a OneSignal push request.",
+  "scripts": {
+    "prepare:capacitor": "node scripts/prepare-capacitor.js",
+    "dev": "npx vercel dev",
+    "build": "node scripts/verify.js",
+    "start": "npx vercel dev",
+    "android": "npm run prepare:capacitor && npx cap open android",
+    "sync:android": "npm run prepare:capacitor && npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.2",
+    "@capacitor/core": "^7.4.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.2",
+    "typescript": "~5.8.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
