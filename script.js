@@ -14,7 +14,6 @@ let holdTimer;
 let resetTimer;
 let sent = false;
 let holding = false;
-let deferredInstallPrompt;
 
 const storage = {
   get lastRequestAt() {
@@ -131,7 +130,6 @@ async function completeRequest() {
   try {
     await sendRequest();
     storage.lastRequestAt = Date.now();
-    maybePromptInstall();
   } catch (error) {
     statusError.textContent = error.message;
     button.classList.remove("sent");
@@ -181,16 +179,6 @@ function cancelHold() {
   ring.style.strokeDashoffset = RING_CIRCUMFERENCE;
 }
 
-async function maybePromptInstall() {
-  if (!deferredInstallPrompt) {
-    return;
-  }
-
-  const prompt = deferredInstallPrompt;
-  deferredInstallPrompt = undefined;
-  await prompt.prompt();
-}
-
 function registerServiceWorker() {
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
@@ -203,11 +191,6 @@ button.addEventListener("pointerdown", startHold);
 button.addEventListener("pointerup", cancelHold);
 button.addEventListener("pointerleave", cancelHold);
 button.addEventListener("pointercancel", cancelHold);
-
-window.addEventListener("beforeinstallprompt", (event) => {
-  event.preventDefault();
-  deferredInstallPrompt = event;
-});
 
 resetRing();
 registerServiceWorker();
