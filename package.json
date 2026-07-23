@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "A personal one-button PWA and Capacitor app that sends a OneSignal push request.",
+  "description": "A personal one-button PWA and Capacitor app that sends a Gmail email request through EmailJS.",
   "scripts": {
     "prepare:capacitor": "node scripts/prepare-capacitor.js",
     "dev": "npx vercel dev",

@@ -85,63 +85,50 @@ function checkRateLimit(key) {
   return true;
 }
 
-function buildOneSignalPayload() {
-  const appId = process.env.ONESIGNAL_APP_ID;
-  const subscriptionId = process.env.ONESIGNAL_SUBSCRIPTION_ID;
-  const externalUserId = process.env.ONESIGNAL_EXTERNAL_USER_ID;
-  const segment = process.env.ONESIGNAL_INCLUDED_SEGMENT;
+function getRequiredEnv(name) {
+  const value = process.env[name];
 
-  const payload = {
-    app_id: appId,
-    target_channel: "push",
-    name: "One Tap Request",
-    headings: { en: "❤️ Request Received" },
-    contents: { en: "She needs you." },
-    custom_data: {
-      source: "one_tap_request",
-      sent_at: new Date().toISOString()
-    }
-  };
-
-  if (subscriptionId) {
-    payload.include_subscription_ids = [subscriptionId];
-    return payload;
+  if (!value || !value.trim()) {
+    throw new Error(`${name} is not configured.`);
   }
 
-  if (externalUserId) {
-    payload.include_aliases = { external_id: [externalUserId] };
-    return payload;
-  }
-
-  payload.included_segments = [segment || "Subscribed Users"];
-  return payload;
+  return value.trim();
 }
 
-async function notifyOneSignal() {
-  const apiKey = process.env.ONESIGNAL_API_KEY;
-  const appId = process.env.ONESIGNAL_APP_ID;
+async function sendEmailRequest() {
+  const serviceId = getRequiredEnv("EMAILJS_SERVICE_ID");
+  const templateId = getRequiredEnv("EMAILJS_TEMPLATE_ID");
+  const publicKey = getRequiredEnv("EMAILJS_PUBLIC_KEY");
+  const privateKey = getRequiredEnv("EMAILJS_PRIVATE_KEY");
+  const toEmail = getRequiredEnv("REQUEST_RECIPIENT_EMAIL");
 
-  if (!apiKey || !appId) {
-    throw new Error("OneSignal is not configured.");
-  }
-
-  const response = await fetch("https://api.onesignal.com/notifications?c=push", {
+  const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
     method: "POST",
     headers: {
-      Authorization: `Key ${apiKey}`,
       "Content-Type": "application/json",
       Accept: "application/json"
     },
-    body: JSON.stringify(buildOneSignalPayload())
+    body: JSON.stringify({
+      service_id: serviceId,
+      template_id: templateId,
+      user_id: publicKey,
+      accessToken: privateKey,
+      template_params: {
+        to_email: toEmail,
+        subject: "❤️ Request Received",
+        title: "❤️ Request Received",
+        message: "She needs you.",
+        body: "She needs you.",
+        sent_at: new Date().toISOString()
+      }
+    })
   });
 
   const body = await response.text();
 
   if (!response.ok) {
-    throw new Error(`OneSignal rejected the request: ${body}`);
+    throw new Error(`EmailJS rejected the request: ${body}`);
   }
-
-  return body ? JSON.parse(body) : {};
 }
 
 export default async function handler(request, response) {
@@ -186,8 +173,8 @@ export default async function handler(request, response) {
       return;
     }
 
-    const notification = await notifyOneSignal();
-    sendJson(response, 200, { ok: true, notificationId: notification.id || null });
+    await sendEmailRequest();
+    sendJson(response, 200, { ok: true });
   } catch (error) {
     console.error(error);
     sendJson(response, 500, { ok: false, message: "Request could not be sent." });
