@@ -9,6 +9,7 @@
     "prepare:capacitor": "node scripts/prepare-capacitor.js",
     "dev": "npx vercel dev",
     "build": "node scripts/build-public.js && node scripts/verify.js",
+    "test:api": "node scripts/test-request-handler.js",
     "start": "npx vercel dev",
     "android": "npm run prepare:capacitor && npx cap open android",
     "sync:android": "npm run prepare:capacitor && npx cap sync android"

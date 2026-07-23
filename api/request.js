@@ -1,6 +1,29 @@
 const RATE_LIMIT_WINDOW_MS = 30000;
 const MAX_BODY_BYTES = 2048;
 const recentRequests = new Map();
+const REQUIRED_EMAIL_ENV = [
+  "EMAILJS_SERVICE_ID",
+  "EMAILJS_TEMPLATE_ID",
+  "EMAILJS_PUBLIC_KEY",
+  "EMAILJS_PRIVATE_KEY",
+  "REQUEST_RECIPIENT_EMAIL"
+];
+
+class ConfigurationError extends Error {
+  constructor(message, details = {}) {
+    super(message);
+    this.name = "ConfigurationError";
+    this.details = details;
+  }
+}
+
+class EmailDeliveryError extends Error {
+  constructor(message, details = {}) {
+    super(message);
+    this.name = "EmailDeliveryError";
+    this.details = details;
+  }
+}
 
 function sendJson(response, statusCode, payload) {
   response.statusCode = statusCode;
@@ -10,7 +33,7 @@ function sendJson(response, statusCode, payload) {
 }
 
 function getClientIp(request) {
-  const forwarded = request.headers["x-forwarded-for"];
+  const forwarded = request.headers?.["x-forwarded-for"];
   if (typeof forwarded === "string" && forwarded.trim()) {
     return forwarded.split(",")[0].trim();
   }
@@ -24,8 +47,7 @@ function isAllowedOrigin(request) {
     return true;
   }
 
-  const origin = request.headers.origin;
-  return origin === allowedOrigin;
+  return request.headers?.origin === allowedOrigin;
 }
 
 function readBody(request) {
@@ -47,6 +69,19 @@ function readBody(request) {
     request.on("end", () => resolve(body));
     request.on("error", reject);
   });
+}
+
+async function readJsonPayload(request) {
+  if (request.body && typeof request.body === "object") {
+    return request.body;
+  }
+
+  if (typeof request.body === "string") {
+    return JSON.parse(request.body);
+  }
+
+  const rawBody = await readBody(request);
+  return JSON.parse(rawBody);
 }
 
 function validatePayload(payload) {
@@ -89,84 +124,115 @@ function getRequiredEnv(name) {
   const value = process.env[name];
 
   if (!value || !value.trim()) {
-    throw new Error(`${name} is not configured.`);
+    throw new ConfigurationError(`${name} is not configured.`, { missing: [name] });
   }
 
   return value.trim();
 }
 
+function validateEmailConfig() {
+  const missing = REQUIRED_EMAIL_ENV.filter((name) => !process.env[name]?.trim());
+
+  if (missing.length) {
+    throw new ConfigurationError("EmailJS environment is incomplete.", { missing });
+  }
+}
+
+function logRequestError(error, context = {}) {
+  console.error(JSON.stringify({
+    level: "error",
+    source: "one-tap-request",
+    phase: context.phase || "request",
+    name: error?.name || "Error",
+    message: error?.message || "Unknown error",
+    details: error?.details || undefined
+  }));
+}
+
 async function sendEmailRequest() {
-const serviceId = getRequiredEnv("EMAILJS_SERVICE_ID");
-const templateId = getRequiredEnv("EMAILJS_TEMPLATE_ID");
-const publicKey = getRequiredEnv("EMAILJS_PUBLIC_KEY");
-const privateKey = getRequiredEnv("EMAILJS_PRIVATE_KEY");
-const toEmail = getRequiredEnv("REQUEST_RECIPIENT_EMAIL");
+  validateEmailConfig();
 
-  const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json"
-    },
-    body: JSON.stringify({
-      service_id: serviceId,
-      template_id: templateId,
-      user_id: publicKey,
-      accessToken: privateKey,
-      template_params: {
-        to_email: toEmail,
-        subject: "❤️ Request Received",
-        title: "❤️ Request Received",
-        message: "She needs you.",
-        body: "She needs you.",
-        sent_at: new Date().toISOString()
-      }
-    })
-  });
+  const serviceId = getRequiredEnv("EMAILJS_SERVICE_ID");
+  const templateId = getRequiredEnv("EMAILJS_TEMPLATE_ID");
+  const publicKey = getRequiredEnv("EMAILJS_PUBLIC_KEY");
+  const privateKey = getRequiredEnv("EMAILJS_PRIVATE_KEY");
+  const toEmail = getRequiredEnv("REQUEST_RECIPIENT_EMAIL");
 
-  const body = await response.text();
+  let emailResponse;
 
-  if (!response.ok) {
-    throw new Error(`EmailJS rejected the request: ${body}`);
+  try {
+    emailResponse = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+      body: JSON.stringify({
+        service_id: serviceId,
+        template_id: templateId,
+        user_id: publicKey,
+        accessToken: privateKey,
+        template_params: {
+          to_email: toEmail,
+          subject: "❤️ Request Received",
+          title: "❤️ Request Received",
+          message: "She needs you.",
+          body: "She needs you.",
+          sent_at: new Date().toISOString()
+        }
+      })
+    });
+  } catch (error) {
+    throw new EmailDeliveryError("EmailJS request could not be reached.", {
+      cause: error?.message || "Network request failed."
+    });
+  }
+
+  const body = await emailResponse.text();
+
+  if (!emailResponse.ok) {
+    throw new EmailDeliveryError("EmailJS rejected the request.", {
+      status: emailResponse.status,
+      response: body.slice(0, 500)
+    });
   }
 }
 
 export default async function handler(request, response) {
-  response.setHeader("Access-Control-Allow-Methods", "POST");
-  response.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  if (request.method === "OPTIONS") {
-    response.statusCode = 204;
-    response.end();
-    return;
-  }
-
-  if (request.method !== "POST") {
-    sendJson(response, 405, { ok: false, message: "Only POST requests are allowed." });
-    return;
-  }
-
-  if (!isAllowedOrigin(request)) {
-    sendJson(response, 403, { ok: false, message: "Request origin is not allowed." });
-    return;
-  }
-
-  if (!String(request.headers["content-type"] || "").includes("application/json")) {
-    sendJson(response, 415, { ok: false, message: "Content-Type must be application/json." });
-    return;
-  }
-
-  const ip = getClientIp(request);
-
-  if (!checkRateLimit(ip)) {
-    response.setHeader("Retry-After", String(RATE_LIMIT_WINDOW_MS / 1000));
-    sendJson(response, 429, { ok: false, message: "Try again in 30s." });
-    return;
-  }
-
   try {
-    const rawBody = await readBody(request);
-    const payload = JSON.parse(rawBody);
+    response.setHeader("Access-Control-Allow-Methods", "POST");
+    response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+    if (request.method === "OPTIONS") {
+      response.statusCode = 204;
+      response.end();
+      return;
+    }
+
+    if (request.method !== "POST") {
+      sendJson(response, 405, { ok: false, message: "Only POST requests are allowed." });
+      return;
+    }
+
+    if (!isAllowedOrigin(request)) {
+      sendJson(response, 403, { ok: false, message: "Request origin is not allowed." });
+      return;
+    }
+
+    if (!String(request.headers?.["content-type"] || "").includes("application/json")) {
+      sendJson(response, 415, { ok: false, message: "Content-Type must be application/json." });
+      return;
+    }
+
+    const ip = getClientIp(request);
+
+    if (!checkRateLimit(ip)) {
+      response.setHeader("Retry-After", String(RATE_LIMIT_WINDOW_MS / 1000));
+      sendJson(response, 429, { ok: false, message: "Try again in 30s." });
+      return;
+    }
+
+    const payload = await readJsonPayload(request);
 
     if (!validatePayload(payload)) {
       sendJson(response, 400, { ok: false, message: "Invalid request." });
@@ -175,11 +241,20 @@ export default async function handler(request, response) {
 
     await sendEmailRequest();
     sendJson(response, 200, { ok: true });
-  }catch (error) {
-  console.error(error);
+  } catch (error) {
+    if (error instanceof ConfigurationError) {
+      logRequestError(error, { phase: "configuration" });
+      sendJson(response, 500, { ok: false, code: "EMAIL_CONFIG_MISSING", message: "Email delivery is not configured." });
+      return;
+    }
 
-  sendJson(response, 500, {
-    ok: false,
-    error: error.message
-  });
+    if (error instanceof EmailDeliveryError) {
+      logRequestError(error, { phase: "emailjs" });
+      sendJson(response, 502, { ok: false, code: "EMAIL_DELIVERY_FAILED", message: "Email delivery failed." });
+      return;
+    }
+
+    logRequestError(error, { phase: "unexpected" });
+    sendJson(response, 500, { ok: false, code: "REQUEST_FAILED", message: "Request could not be sent." });
+  }
 }
