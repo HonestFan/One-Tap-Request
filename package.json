@@ -5,6 +5,7 @@
   "type": "module",
   "description": "A personal one-button PWA and Capacitor app that sends a Gmail email request through EmailJS.",
   "scripts": {
+    "postinstall": "node scripts/build-public.js",
     "prepare:capacitor": "node scripts/prepare-capacitor.js",
     "dev": "npx vercel dev",
     "build": "node scripts/build-public.js && node scripts/verify.js",
@@ -21,6 +22,6 @@
     "typescript": "~5.8.3"
   },
   "engines": {
-    "node": ">=20"
+    "node": "20.x"
   }
 }
