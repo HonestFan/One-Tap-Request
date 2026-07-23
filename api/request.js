@@ -1,4 +1,4 @@
-const RATE_LIMIT_WINDOW_MS = 30000;
+const RATE_LIMIT_WINDOW_MS = 10000;
 const MAX_BODY_BYTES = 2048;
 const recentRequests = new Map();
 const REQUIRED_EMAIL_ENV = [
@@ -273,7 +273,7 @@ export default async function handler(request, response) {
 
     if (!checkRateLimit(ip)) {
       response.setHeader("Retry-After", String(RATE_LIMIT_WINDOW_MS / 1000));
-      sendJson(response, 429, { ok: false, message: "Try again in 30s." });
+      sendJson(response, 429, { ok: false, message: "Try again in 10s." });
       return;
     }
 

@@ -1,7 +1,7 @@
 const HOLD_MS = 1000;
 const RESET_MS = 3000;
 const RING_CIRCUMFERENCE = 2 * Math.PI * 115;
-const CLIENT_COOLDOWN_MS = 30000;
+const CLIENT_COOLDOWN_MS = 10000;
 
 const button = document.getElementById("requestButton");
 const ring = document.getElementById("ringProgress");

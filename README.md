@@ -65,4 +65,4 @@ Build from Android Studio after Capacitor opens the generated Android project. T
 
 ## Security
 
-The API accepts POST requests only, validates JSON payload shape, rejects oversized bodies, checks request timestamps, supports origin locking through `PUBLIC_APP_ORIGIN`, stores EmailJS credentials only in Vercel environment variables, and rate limits requests to one every 30 seconds per client IP.
+The API accepts POST requests only, validates JSON payload shape, rejects oversized bodies, checks request timestamps, supports origin locking through `PUBLIC_APP_ORIGIN`, stores EmailJS credentials only in Vercel environment variables, and rate limits requests to one every 10 seconds per client IP.
